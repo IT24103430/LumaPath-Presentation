@@ -11,8 +11,6 @@ if (!app) throw new Error('Presentation root was not found');
 const icon = {
   arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>',
   down: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6"/></svg>',
-  play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>',
-  pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>',
   expand: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg>',
 };
 
@@ -164,12 +162,12 @@ app.innerHTML = `
       <p class="eyebrow" data-reveal><span class="eyebrow__line"></span> THE PATH FORWARD</p>
       <h2 id="title-closing" class="closing__title" data-reveal>Know what to do <em>next.</em></h2>
       <p class="closing__copy" data-reveal>Stay on track. Build your future.</p>
-      <div class="closing__actions" data-reveal><a class="button button--primary" href="https://lumapath-kappa.vercel.app/" target="_blank" rel="noopener noreferrer">Explore LumaPath ${icon.arrow}</a><a class="button button--text" href="#opening">Watch again ↗</a></div>
+      <div class="closing__actions" data-reveal><a class="button button--primary" href="https://lumapath-kappa.vercel.app/" target="_blank" rel="noopener noreferrer">Explore LumaPath ${icon.arrow}</a></div>
     </div>
     <div class="closing__foot"><span>LUMAPATH AI</span><span>STUDENT SUCCESS × CAREER READINESS</span><span>© 2026</span></div>
   `, 'scene--closing')}
   </main>
-  <div class="transport" aria-label="Presentation controls"><button id="play-button" class="transport__play" type="button" aria-label="Play automatic presentation">${icon.play}<span>PLAY FILM</span></button><span class="transport__divider"></span><span id="time-display" class="transport__time">00:00</span><button id="fullscreen-button" class="transport__fullscreen" type="button" aria-label="Enter fullscreen">${icon.expand}</button></div>
+  <div class="transport" aria-label="Presentation controls"><button id="fullscreen-button" class="transport__fullscreen" type="button" aria-label="Enter fullscreen">${icon.expand}</button></div>
 `;
 
 const sections = [...document.querySelectorAll<HTMLElement>('.scene')];
@@ -180,8 +178,6 @@ const transitionSlate = document.querySelector<HTMLElement>('#transition-slate')
 const transitionNumber = document.querySelector<HTMLElement>('#transition-number')!;
 const transitionLabel = document.querySelector<HTMLElement>('#transition-label')!;
 const chapterCounter = document.querySelector<HTMLElement>('#chapter-counter')!;
-const playButton = document.querySelector<HTMLButtonElement>('#play-button')!;
-const timeDisplay = document.querySelector<HTMLElement>('#time-display')!;
 const fullscreenButton = document.querySelector<HTMLButtonElement>('#fullscreen-button')!;
 const ambientCanvas = document.querySelector<HTMLCanvasElement>('#ambient')!;
 let ambient: AmbientScene | null = null;
@@ -195,10 +191,6 @@ requestAnimationFrame(() => {
 });
 let activeIndex = -1;
 let transitionIndex = -1;
-let filmFrame = 0;
-let filmPlaying = false;
-let lastFilmTime = 0;
-const filmSpeed = 52;
 let chapterTransition: gsap.core.Tween | null = null;
 let targetChapter: number | null = null;
 
@@ -209,7 +201,6 @@ function stopChapterTransition() {
 }
 
 function goToChapter(index: number) {
-  stopFilm();
   stopChapterTransition();
   const section = sections[index];
   const top = Math.min(section.offsetTop, maxScroll());
@@ -239,7 +230,6 @@ document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
 });
 
 function maxScroll() { return Math.max(1, document.documentElement.scrollHeight - window.innerHeight); }
-function formatTime(seconds: number) { const value = Math.floor(seconds); return `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`; }
 
 function updateProgress() {
   const progress = Math.min(1, Math.max(0, window.scrollY / maxScroll()));
@@ -256,7 +246,6 @@ function updateProgress() {
   }
   progressFill.style.transform = `scaleX(${progress})`;
   progressTrack.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
-  timeDisplay.textContent = formatTime(window.scrollY / filmSpeed);
   ambient?.setProgress(progress);
   if (slateIndex !== -1) {
     if (slateIndex !== transitionIndex) {
@@ -279,36 +268,6 @@ function updateProgress() {
   }
 }
 
-function stopFilm() {
-  filmPlaying = false;
-  cancelAnimationFrame(filmFrame);
-  playButton.innerHTML = `${icon.play}<span>PLAY FILM</span>`;
-  playButton.setAttribute('aria-label', 'Play automatic presentation');
-  playButton.setAttribute('aria-pressed', 'false');
-}
-
-function filmTick(time: number) {
-  if (!filmPlaying) return;
-  const delta = Math.min((time - lastFilmTime) / 1000, 0.08);
-  lastFilmTime = time;
-  const next = Math.min(maxScroll(), window.scrollY + filmSpeed * delta);
-  window.scrollTo({ top: next, behavior: 'instant' });
-  if (next >= maxScroll() - 1) stopFilm();
-  else filmFrame = requestAnimationFrame(filmTick);
-}
-
-playButton.addEventListener('click', () => {
-  stopChapterTransition();
-  if (filmPlaying) { stopFilm(); return; }
-  if (window.scrollY >= maxScroll() - 2) window.scrollTo({ top: 0, behavior: 'instant' });
-  filmPlaying = true;
-  playButton.innerHTML = `${icon.pause}<span>PAUSE FILM</span>`;
-  playButton.setAttribute('aria-label', 'Pause automatic presentation');
-  playButton.setAttribute('aria-pressed', 'true');
-  lastFilmTime = performance.now();
-  filmFrame = requestAnimationFrame(filmTick);
-});
-
 fullscreenButton.addEventListener('click', async () => {
   try {
     if (document.fullscreenElement) await document.exitFullscreen();
@@ -320,14 +279,10 @@ document.addEventListener('fullscreenchange', () => {
 });
 
 for (const eventName of ['wheel', 'touchstart', 'pointerdown'] as const) {
-  window.addEventListener(eventName, (event) => {
-    if (eventName !== 'wheel' && event.target instanceof Node && playButton.contains(event.target)) return;
-    stopChapterTransition();
-    if (filmPlaying) stopFilm();
-  }, { passive: true });
+  window.addEventListener(eventName, stopChapterTransition, { passive: true });
 }
 window.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') { stopFilm(); stopChapterTransition(); return; }
+  if (event.key === 'Escape') { stopChapterTransition(); return; }
   if (event.target instanceof HTMLElement && event.target.closest('button, input, textarea, select, [contenteditable="true"]')) return;
   if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(event.key)) {
     event.preventDefault(); goToChapter(Math.min((targetChapter ?? activeIndex) + 1, sections.length - 1));
@@ -335,7 +290,7 @@ window.addEventListener('keydown', (event) => {
   if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(event.key)) {
     event.preventDefault(); goToChapter(Math.max((targetChapter ?? activeIndex) - 1, 0));
   }
-  if (['Home', 'End'].includes(event.key)) { stopFilm(); stopChapterTransition(); }
+  if (['Home', 'End'].includes(event.key)) { stopChapterTransition(); }
 });
 
 window.addEventListener('scroll', updateProgress, { passive: true });
@@ -345,7 +300,6 @@ updateProgress();
 const destroyMotion = reducedMotion ? () => {} : setupScrollMotion();
 
 window.addEventListener('pagehide', (event) => {
-  stopFilm();
   stopChapterTransition();
   if (event.persisted) return;
   pageActive = false;
