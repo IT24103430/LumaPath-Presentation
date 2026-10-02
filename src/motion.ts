@@ -13,7 +13,7 @@ function sceneTimeline(id: string) {
       trigger: `#${id}`,
       start: 'top bottom',
       end: 'bottom top',
-      scrub: 1.25,
+      scrub: 0.6,
       invalidateOnRefresh: true,
     },
   });
@@ -106,26 +106,26 @@ export function setupScrollMotion(): () => void {
     });
     intelligence.fromTo('#intelligence .idea-input__dot',
       { scale: 0.7, opacity: 0.45 },
-      { scale: 1, opacity: 1, duration: 0.65, stagger: 0.3 },
+      { scale: 1, opacity: 1, duration: 0.35, stagger: 0.08 },
     );
     intelligence.from('#intelligence .idea-connector--in span', {
-      scaleY: 0, transformOrigin: 'top', duration: 0.8,
+      scaleY: 0, transformOrigin: 'top', duration: 0.35,
     });
     intelligence.fromTo('#intelligence .idea-engine',
       { borderColor: 'rgba(141, 229, 237, 0.22)' },
-      { borderColor: 'rgba(141, 229, 237, 0.85)', duration: 1 },
+      { borderColor: 'rgba(141, 229, 237, 0.85)', duration: 0.45 },
     );
     intelligence.fromTo('#intelligence .idea-engine__steps span',
       { backgroundColor: 'rgba(141, 229, 237, 0.03)' },
-      { backgroundColor: 'rgba(141, 229, 237, 0.16)', duration: 0.65, stagger: 0.3 },
-      '<0.2',
+      { backgroundColor: 'rgba(141, 229, 237, 0.16)', duration: 0.35, stagger: 0.08 },
+      '<0.1',
     );
     intelligence.from('#intelligence .idea-connector--out span', {
-      scaleY: 0, transformOrigin: 'top', duration: 0.8,
+      scaleY: 0, transformOrigin: 'top', duration: 0.35,
     });
     intelligence.fromTo('#intelligence .idea-result',
       { borderColor: 'rgba(141, 229, 237, 0.22)' },
-      { borderColor: 'rgba(141, 229, 237, 0.75)', duration: 1 },
+      { borderColor: 'rgba(141, 229, 237, 0.75)', duration: 0.45 },
     );
 
     const action = sceneTimeline('action');

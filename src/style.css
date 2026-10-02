@@ -28,10 +28,6 @@ main{position:relative;z-index:1}.scene{position:relative;min-height:100svh;disp
 @keyframes icon-drift{50%{transform:translateY(-4px)}}
 @keyframes signal-glow{50%{box-shadow:0 0 0 5px #8cecf21b,0 0 18px currentColor}}
 @keyframes node-breathe{50%{box-shadow:0 0 0 13px #81edee0e,0 0 39px #80e6ed70}}
-.transition-slate{position:fixed;z-index:3;left:50%;top:50%;display:flex;flex-direction:column;align-items:center;gap:11px;min-width:280px;opacity:0;transform:translate(-50%,-50%) scale(.82);pointer-events:none;text-align:center;text-shadow:0 0 30px #060916,0 0 70px #060916}.transition-slate>span:first-child{color:#8ae9f4;font-size:12px;font-weight:700;letter-spacing:.34em}.transition-slate__rule{width:55px;height:1px;background:#9bebf6;box-shadow:0 0 15px #9bebf6}.transition-slate strong{font-family:'Space Grotesk',sans-serif;font-size:clamp(35px,4.7vw,66px);font-weight:500;letter-spacing:-.06em;white-space:nowrap;color:#f2f8ff}
-.transition-slate::before{content:"";position:absolute;inset:-55px -70px;z-index:-1;border-radius:40px;background:radial-gradient(ellipse,#060916fa 30%,#060916d9 60%,transparent 75%)}
-@media(max-width:760px){.transition-slate{min-width:0;width:calc(100% - 48px)}.transition-slate strong{font-size:clamp(28px,7vw,44px);white-space:normal;line-height:1.15}.transition-slate::before{inset:-45px -20px}}
-@media(prefers-reduced-motion:reduce){.transition-slate{display:none}}
 
 /* Compact research callouts keep the evidence beside the idea it supports. */
 .research-card{--research-accent:#94e6f1;position:relative;max-width:475px;margin-top:26px;padding:18px 20px 16px;border:1px solid #a0ddec24;border-radius:16px;background:linear-gradient(120deg,#8bdbe909,#0d182888);overflow:hidden}

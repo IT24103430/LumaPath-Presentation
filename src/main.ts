@@ -32,13 +32,12 @@ app.innerHTML = `
       <span class="brand__mark"><span></span><span></span><span></span></span>
       <span>LumaPath<span class="brand__ai"> AI</span></span>
     </a>
-    <div class="topbar__right"><span class="topbar__tag">AN INTERACTIVE STORY</span><span class="topbar__divider"></span><span id="chapter-counter">01 / 07</span></div>
+    <div class="topbar__right"><span class="topbar__tag" id="current-chapter-label">THE VISION</span><span class="topbar__divider"></span><span id="chapter-counter">01 / 07</span></div>
   </header>
   <nav class="chapter-nav" aria-label="Presentation chapters">
     ${story.map((scene) => `<a class="chapter-nav__item" href="#${scene.id}" aria-label="Chapter ${scene.number}: ${scene.label}" title="${scene.label}"><span class="chapter-nav__dot"></span><span class="chapter-nav__label">${scene.label}</span></a>`).join('')}
   </nav>
   <div class="progress-track" role="progressbar" aria-label="Presentation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-fill"></span></div>
-  <div class="transition-slate" id="transition-slate" aria-hidden="true"><span id="transition-number">02</span><span class="transition-slate__rule"></span><strong id="transition-label">THE PROBLEM</strong></div>
   <main>
   ${chapter('opening', `
     <div class="hero__orbit hero__orbit--one" aria-hidden="true"></div><div class="hero__orbit hero__orbit--two" aria-hidden="true"></div>
@@ -189,9 +188,7 @@ const sections = [...document.querySelectorAll<HTMLElement>('.scene')];
 const navItems = [...document.querySelectorAll<HTMLAnchorElement>('.chapter-nav__item')];
 const progressTrack = document.querySelector<HTMLElement>('.progress-track')!;
 const progressFill = document.querySelector<HTMLElement>('#progress-fill')!;
-const transitionSlate = document.querySelector<HTMLElement>('#transition-slate')!;
-const transitionNumber = document.querySelector<HTMLElement>('#transition-number')!;
-const transitionLabel = document.querySelector<HTMLElement>('#transition-label')!;
+const currentChapterLabel = document.querySelector<HTMLElement>('#current-chapter-label')!;
 const chapterCounter = document.querySelector<HTMLElement>('#chapter-counter')!;
 const fullscreenButton = document.querySelector<HTMLButtonElement>('#fullscreen-button')!;
 const ambientCanvas = document.querySelector<HTMLCanvasElement>('#ambient')!;
@@ -205,16 +202,13 @@ requestAnimationFrame(() => {
   }).catch(() => { ambientCanvas.hidden = true; });
 });
 let activeIndex = -1;
-let transitionIndex = -1;
-let chapterTransition: gsap.core.Timeline | null = null;
+let chapterTransition: gsap.core.Tween | null = null;
 let targetChapter: number | null = null;
-let heldTopicIndex: number | null = null;
 
 function stopChapterTransition() {
   chapterTransition?.kill();
   chapterTransition = null;
   targetChapter = null;
-  heldTopicIndex = null;
   updateProgress();
 }
 
@@ -228,27 +222,14 @@ function goToChapter(index: number) {
   }
   targetChapter = index;
   const position = { top: window.scrollY };
-  // This explanatory page should arrive fully in view before its diagram plays.
-  if (section.id === 'intelligence') {
-    chapterTransition = gsap.timeline({
-      onComplete: () => { chapterTransition = null; targetChapter = null; updateProgress(); },
-    }).to(position, {
-      top, duration: 2, ease: 'power2.inOut',
-      onUpdate: () => window.scrollTo({ top: position.top, behavior: 'instant' }),
-    });
-    return;
-  }
-  const midpoint = (position.top + top) / 2;
-  chapterTransition = gsap.timeline({
-    defaults: { ease: 'power2.inOut' },
+  if (Math.abs(top - position.top) < 2) { targetChapter = null; return; }
+  chapterTransition = gsap.to(position, {
+    top,
+    duration: Math.min(1.6, 1.1 + Math.abs(top - position.top) / window.innerHeight * 0.12),
+    ease: 'power2.inOut',
     onUpdate: () => window.scrollTo({ top: position.top, behavior: 'instant' }),
-    onComplete: () => { chapterTransition = null; targetChapter = null; heldTopicIndex = null; updateProgress(); },
-  })
-    .to(position, { top: midpoint, duration: 1.1 })
-    .call(() => { heldTopicIndex = index; updateProgress(); })
-    .to({}, { duration: 2.5 })
-    .call(() => { heldTopicIndex = null; updateProgress(); })
-    .to(position, { top, duration: 1.4 });
+    onComplete: () => { chapterTransition = null; targetChapter = null; updateProgress(); },
+  });
 }
 
 document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
@@ -266,35 +247,12 @@ function maxScroll() { return Math.max(1, document.documentElement.scrollHeight 
 function updateProgress() {
   const progress = Math.min(1, Math.max(0, window.scrollY / maxScroll()));
   const nextIndex = Math.max(0, sections.findIndex((section) => section.getBoundingClientRect().bottom > window.innerHeight * 0.55));
-  let slateIndex = -1;
-  let slateStrength = 0;
-  if (!reducedMotion) {
-    let nearestDistance = Number.POSITIVE_INFINITY;
-    for (let index = 1; index < sections.length; index++) {
-      const distance = Math.abs(window.scrollY - (sections[index].offsetTop - window.innerHeight * 0.5));
-      if (distance < nearestDistance) { nearestDistance = distance; slateIndex = index; }
-    }
-    // Hold full opacity across the middle of the scroll transition.
-    slateStrength = Math.min(1, Math.max(0, (window.innerHeight * 0.34 - nearestDistance) / (window.innerHeight * 0.12)));
-  }
-  if (heldTopicIndex !== null) { slateIndex = heldTopicIndex; slateStrength = 1; }
-  // The idea page has a persistent heading; an overlay would obscure its flow.
-  if (sections[targetChapter ?? -1]?.id === 'intelligence' || (heldTopicIndex === null && sections[slateIndex]?.id === 'intelligence')) slateStrength = 0;
   progressFill.style.transform = `scaleX(${progress})`;
   progressTrack.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
   ambient?.setProgress(progress);
-  if (slateIndex !== -1) {
-    if (slateIndex !== transitionIndex) {
-      transitionIndex = slateIndex;
-      transitionNumber.textContent = story[slateIndex].number;
-      transitionLabel.textContent = story[slateIndex].label.toUpperCase();
-    }
-    transitionSlate.style.opacity = String(slateStrength);
-    transitionSlate.style.transform = `translate(-50%, -50%) scale(${0.82 + slateStrength * 0.18})`;
-  }
-  else transitionSlate.style.opacity = '0';
   if (nextIndex !== activeIndex) {
     activeIndex = nextIndex;
+    currentChapterLabel.textContent = story[activeIndex].label.toUpperCase();
     chapterCounter.textContent = `${story[activeIndex].number} / ${String(story.length).padStart(2, '0')}`;
     navItems.forEach((item, index) => {
       item.classList.toggle('is-active', index === activeIndex);
