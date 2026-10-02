@@ -1,0 +1,51 @@
+[
+  {
+    "id": "opening",
+    "number": "01",
+    "label": "The vision",
+    "title": "Your future has a next step.",
+    "narration": "Every student has a destination. The difficult part is knowing what to do next, right now. LumaPath turns that uncertainty into a clear, realistic path."
+  },
+  {
+    "id": "overload",
+    "number": "02",
+    "label": "The problem",
+    "title": "One student. Too many moving parts.",
+    "narration": "Academic deadlines, career goals, skill gaps, and personal capacity often live in separate places. Students are left to connect everything themselves."
+  },
+  {
+    "id": "intelligence",
+    "number": "03",
+    "label": "The idea",
+    "title": "One connected decision.",
+    "narration": "LumaPath brings those signals together. Rules identify priority and risk. Planning logic finds a realistic time. Clear explanations show the student why."
+  },
+  {
+    "id": "action",
+    "number": "04",
+    "label": "The moment",
+    "title": "The next best action, made obvious.",
+    "narration": "Instead of another overwhelming dashboard, the student sees one useful action, the reason it matters, and a manageable plan for today."
+  },
+  {
+    "id": "replanning",
+    "number": "05",
+    "label": "The response",
+    "title": "Life changes. The plan adapts.",
+    "narration": "When a deadline moves or available capacity falls, LumaPath protects urgent work and reschedules flexible learning. The plan changes with the student."
+  },
+  {
+    "id": "readiness",
+    "number": "06",
+    "label": "The future",
+    "title": "Progress you can see. Skills you can show.",
+    "narration": "The career roadmap links learning, practice, and project evidence. Students can see where they are and what to build next."
+  },
+  {
+    "id": "closing",
+    "number": "07",
+    "label": "The promise",
+    "title": "Know what to do next.",
+    "narration": "Academic success and career growth belong in one plan. LumaPath helps students stay on track and build their future, one achievable step at a time."
+  }
+]

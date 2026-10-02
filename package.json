@@ -1,0 +1,29 @@
+{
+  "name": "lumapath-cinematic-presentation",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --pretty false",
+    "verify:static": "node scripts/verify.mjs",
+    "verify": "npm run verify:static && npm run script:check && npm run typecheck && npm run build",
+    "script:export": "node scripts/export-script.mjs",
+    "script:check": "node scripts/export-script.mjs --check",
+    "test": "node scripts/test-modules.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0",
+    "three": "^0.185.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.185.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}
