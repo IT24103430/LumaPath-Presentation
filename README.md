@@ -12,9 +12,11 @@ npm run dev
 
 Open the local URL printed by Vite. Scroll to direct the story. Use the fullscreen control for presenting. Arrow keys, Page Up/Down, and Space move between scenes.
 
-Chapter links and keyboard navigation ease between scenes over roughly 2–3 seconds. Research callouts in the problem and career-readiness chapters link to their original sources. **Explore LumaPath** opens https://lumapath-kappa.vercel.app/.
+Chapter links and keyboard navigation ease between scenes with a 2.5-second pause on the chapter topic (about 5 seconds total). Page headings appear early and stay visible longer while scrolling. Research callouts in the problem and career-readiness chapters link to their original sources. **Explore LumaPath** opens https://lumapath-kappa.vercel.app/.
 
 Scrolling controls the animations in both directions: chapter titles move through the frame, problem cards scatter and gather, signals flow into the decision engine, the dashboard moves into focus, the schedule replans, and the career path builds step by step. A glowing marker travels along the Three.js path in the background.
+
+The LumaPath Idea chapter moves directly into view in two seconds. Its heading and context → LumaPath → next action diagram remain visible; a one-time sequence highlights the flow without requiring more scrolling. The supplied LumaPath AI logo is stored in `public/brand/`.
 
 ## Edit the presentation
 
@@ -25,6 +27,16 @@ Scrolling controls the animations in both directions: chapter titles move throug
 - `src/story.json` stores chapter labels and optional voiceover text.
 
 Run `npm run script:export` after editing `src/story.json` to refresh `PRESENTATION_SCRIPT.md`. The on-screen product views are illustrative; no performance numbers or user results are claimed.
+
+## Deploy to Vercel
+
+The live presentation is at https://lumapath-presentation.vercel.app/. It uses the `lumapath-presentation` project in the Cipher Vercel account. `vercel.json` configures the Vite build and `dist` output directory.
+
+```bash
+vercel deploy --prod --yes --scope cipher-34bc
+```
+
+On a new checkout, run `vercel link --yes --project lumapath-presentation --scope cipher-34bc` first. Local Vercel settings and environment files are excluded from Git.
 
 ## Checks
 

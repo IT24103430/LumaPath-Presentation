@@ -26,12 +26,12 @@ function animateCopy(timeline: gsap.core.Timeline, selector: string) {
   const targets = gsap.utils.toArray<HTMLElement>(selector);
   timeline.fromTo(targets,
     { autoAlpha: 0, y: travel(45), scale: 0.99 },
-    { autoAlpha: 1, y: 0, scale: 1, duration: 0.31, stagger: 0.035 },
-    0.08,
+    { autoAlpha: 1, y: 0, scale: 1, duration: 0.22, stagger: 0.025 },
+    0.02,
   );
   timeline.to(targets,
-    { autoAlpha: 0.08, y: travel(-45), scale: 0.99, duration: 0.2, stagger: 0.015, ease: 'power2.in' },
-    0.76,
+    { autoAlpha: 0.08, y: travel(-45), scale: 0.99, duration: 0.08, stagger: 0.005, ease: 'power2.in' },
+    0.9,
   );
 }
 
@@ -56,7 +56,7 @@ export function setupScrollMotion(): () => void {
     });
     gsap.to('.hero__content', {
       autoAlpha: 0, ease: 'none',
-      scrollTrigger: { trigger: '#opening', start: 'top top', end: 'bottom 50%', scrub: 0.5 },
+      scrollTrigger: { trigger: '#opening', start: 'bottom 85%', end: 'bottom 15%', scrub: 0.5 },
     });
     gsap.to('.scroll-cue, .hero__corner', {
       autoAlpha: 0, y: -28, ease: 'none',
@@ -98,46 +98,34 @@ export function setupScrollMotion(): () => void {
       { autoAlpha: 0, scale: 0.96, rotation: 0, duration: 0.2 }, 0.76,
     );
 
-    const intelligence = sceneTimeline('intelligence');
-    animateCopy(intelligence, '#intelligence .intelligence-layout__intro [data-reveal]');
-    const signalOffsets = [
-      { x: 120, y: 115 }, { x: -140, y: 65 },
-      { x: 145, y: -65 }, { x: -120, y: -115 },
-    ];
-    gsap.utils.toArray<HTMLElement>('#intelligence .signal').forEach((signal, index) => {
-      const offset = signalOffsets[index];
-      intelligence.fromTo(signal,
-        { autoAlpha: 0, x: travel(offset.x), y: travel(offset.y), scale: 0.94 },
-        { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.34 },
-        0.14 + index * 0.035,
-      );
-      intelligence.to(signal,
-        { autoAlpha: 0, x: travel(offset.x), y: travel(offset.y), scale: 0.94, duration: 0.22, ease: 'power2.in' },
-        0.72 + index * 0.018,
-      );
+    // The explanatory flow remains readable at every scroll position. Only its
+    // accents animate once, so an examiner can read at their own pace.
+    const intelligence = gsap.timeline({
+      defaults: { ease: 'power2.inOut' },
+      scrollTrigger: { trigger: '#intelligence .idea-flow', start: 'top 65%', once: true },
     });
-    intelligence.fromTo('#intelligence .decision-system__core',
-      { autoAlpha: 0, scale: 0.94, rotation: -6 },
-      { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.39 }, 0.1,
-    ).to('#intelligence .decision-system__core',
-      { scale: 1.04, autoAlpha: 0.13, rotation: 6, duration: 0.24 }, 0.74,
+    intelligence.fromTo('#intelligence .idea-input__dot',
+      { scale: 0.7, opacity: 0.45 },
+      { scale: 1, opacity: 1, duration: 0.65, stagger: 0.3 },
     );
-    intelligence.fromTo('#intelligence .decision-system__lines',
-      { autoAlpha: 0, scale: 0.35 },
-      { autoAlpha: 1, scale: 1, duration: 0.3 }, 0.19,
-    ).to('#intelligence .decision-system__lines',
-      { autoAlpha: 0, scale: 0.25, duration: 0.22 }, 0.75,
+    intelligence.from('#intelligence .idea-connector--in span', {
+      scaleY: 0, transformOrigin: 'top', duration: 0.8,
+    });
+    intelligence.fromTo('#intelligence .idea-engine',
+      { borderColor: 'rgba(141, 229, 237, 0.22)' },
+      { borderColor: 'rgba(141, 229, 237, 0.85)', duration: 1 },
     );
-    intelligence.fromTo('#intelligence .decision-system__outcomes',
-      { autoAlpha: 0, y: 45, scale: 0.8 },
-      { autoAlpha: 1, y: 0, scale: 1, duration: 0.28 }, 0.31,
-    ).to('#intelligence .decision-system__outcomes',
-      { autoAlpha: 0, y: -35, duration: 0.18 }, 0.78,
+    intelligence.fromTo('#intelligence .idea-engine__steps span',
+      { backgroundColor: 'rgba(141, 229, 237, 0.03)' },
+      { backgroundColor: 'rgba(141, 229, 237, 0.16)', duration: 0.65, stagger: 0.3 },
+      '<0.2',
     );
-    intelligence.fromTo('#intelligence .principle',
-      { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.25 }, 0.34,
-    ).to('#intelligence .principle',
-      { autoAlpha: 0, y: -20, duration: 0.18 }, 0.76,
+    intelligence.from('#intelligence .idea-connector--out span', {
+      scaleY: 0, transformOrigin: 'top', duration: 0.8,
+    });
+    intelligence.fromTo('#intelligence .idea-result',
+      { borderColor: 'rgba(141, 229, 237, 0.22)' },
+      { borderColor: 'rgba(141, 229, 237, 0.75)', duration: 1 },
     );
 
     const action = sceneTimeline('action');

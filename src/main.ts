@@ -79,23 +79,38 @@ app.innerHTML = `
   ${chapter('intelligence', `
     <div class="scene__content intelligence-layout">
       <div class="intelligence-layout__intro">
-        <p class="eyebrow" data-reveal><span class="eyebrow__line"></span> THE LUMAPATH IDEA</p>
-        <h2 id="title-intelligence" class="display" data-reveal>One connected<br /><em>decision.</em></h2>
-        <p class="body-copy" data-reveal>Bring the whole picture together, then make the next step understandable.</p>
+        <p class="eyebrow"><span class="eyebrow__line"></span> THE LUMAPATH IDEA</p>
+        <h2 id="title-intelligence" class="display">One connected<br /><em>decision.</em></h2>
+        <p class="body-copy">Your deadlines, available time, skills, and career goals become one clear next step.</p>
+        <ol class="idea-explanation">
+          <li><span>01</span><div><strong>Understand the student</strong><p>Bring academic work and career ambitions together.</p></div></li>
+          <li><span>02</span><div><strong>Build a realistic plan</strong><p>Prioritize urgent work and fit learning into available time.</p></div></li>
+          <li><span>03</span><div><strong>Make the next step clear</strong><p>Show what to do, when to do it, and why it matters.</p></div></li>
+        </ol>
       </div>
-      <div class="decision-system" aria-label="LumaPath decision flow">
-        <div class="decision-system__inputs">
-          <span class="signal" data-reveal><i class="signal__dot signal__dot--blue"></i> Deadlines</span>
-          <span class="signal" data-reveal><i class="signal__dot signal__dot--peach"></i> Capacity</span>
-          <span class="signal" data-reveal><i class="signal__dot signal__dot--purple"></i> Skills</span>
-          <span class="signal" data-reveal><i class="signal__dot signal__dot--green"></i> Career goals</span>
+      <figure class="idea-flow" aria-label="An example of how LumaPath turns student context into a plan">
+        <figcaption class="idea-flow__caption">FROM YOUR DAY TO YOUR NEXT STEP <span>ILLUSTRATIVE EXAMPLE</span></figcaption>
+        <div class="idea-inputs">
+          <div class="idea-input"><span class="idea-input__dot" aria-hidden="true"></span><div><small>DEADLINE</small><strong>Assignment due Friday</strong></div></div>
+          <div class="idea-input"><span class="idea-input__dot" aria-hidden="true"></span><div><small>AVAILABLE TIME</small><strong>2 hours today</strong></div></div>
+          <div class="idea-input"><span class="idea-input__dot" aria-hidden="true"></span><div><small>SKILL TO BUILD</small><strong>Docker fundamentals</strong></div></div>
+          <div class="idea-input"><span class="idea-input__dot" aria-hidden="true"></span><div><small>CAREER GOAL</small><strong>DevOps engineer</strong></div></div>
         </div>
-        <div class="decision-system__lines" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-        <div class="decision-system__core" data-reveal><div class="decision-system__core-ring"></div><div class="brand__mark brand__mark--large"><span></span><span></span><span></span></div><small>LUMAPATH ENGINE</small></div>
-        <div class="decision-system__outcomes" data-reveal><span>01 <b>Prioritize</b></span><span>02 <b>Schedule</b></span><span>03 <b>Explain</b></span></div>
-      </div>
+        <div class="idea-connector idea-connector--in" aria-hidden="true"><span></span>${icon.down}</div>
+        <div class="idea-engine">
+          <img class="idea-engine__logo" src="/brand/lumapath-logo-dark.png" width="1448" height="1086" alt="LumaPath AI" />
+          <p>Connect the context. Find the next step.</p>
+          <div class="idea-engine__steps"><span>Prioritize</span><span>Schedule</span><span>Explain</span></div>
+        </div>
+        <div class="idea-connector idea-connector--out" aria-hidden="true"><span></span>${icon.down}</div>
+        <div class="idea-result">
+          <div class="idea-result__heading"><span>YOUR NEXT BEST ACTION</span><span class="idea-result__check" aria-hidden="true">✓</span></div>
+          <h3>Start with your assignment.</h3>
+          <p><strong>90 min</strong> for urgent coursework. <strong>30 min</strong> for Docker practice.</p>
+          <div class="idea-result__reason"><strong>Why this plan?</strong> Protect the deadline and keep your career goal moving.</div>
+        </div>
+      </figure>
     </div>
-    <div class="principle" data-reveal>Rules decide. <span>Planning schedules.</span> Guidance explains.</div>
   `, 'scene--intelligence')}
 
   ${chapter('action', `
@@ -191,13 +206,16 @@ requestAnimationFrame(() => {
 });
 let activeIndex = -1;
 let transitionIndex = -1;
-let chapterTransition: gsap.core.Tween | null = null;
+let chapterTransition: gsap.core.Timeline | null = null;
 let targetChapter: number | null = null;
+let heldTopicIndex: number | null = null;
 
 function stopChapterTransition() {
   chapterTransition?.kill();
   chapterTransition = null;
   targetChapter = null;
+  heldTopicIndex = null;
+  updateProgress();
 }
 
 function goToChapter(index: number) {
@@ -210,13 +228,27 @@ function goToChapter(index: number) {
   }
   targetChapter = index;
   const position = { top: window.scrollY };
-  chapterTransition = gsap.to(position, {
-    top,
-    duration: Math.min(2.8, 1.8 + Math.abs(top - position.top) / window.innerHeight * 0.12),
-    ease: 'power2.inOut',
+  // This explanatory page should arrive fully in view before its diagram plays.
+  if (section.id === 'intelligence') {
+    chapterTransition = gsap.timeline({
+      onComplete: () => { chapterTransition = null; targetChapter = null; updateProgress(); },
+    }).to(position, {
+      top, duration: 2, ease: 'power2.inOut',
+      onUpdate: () => window.scrollTo({ top: position.top, behavior: 'instant' }),
+    });
+    return;
+  }
+  const midpoint = (position.top + top) / 2;
+  chapterTransition = gsap.timeline({
+    defaults: { ease: 'power2.inOut' },
     onUpdate: () => window.scrollTo({ top: position.top, behavior: 'instant' }),
-    onComplete: () => { chapterTransition = null; targetChapter = null; },
-  });
+    onComplete: () => { chapterTransition = null; targetChapter = null; heldTopicIndex = null; updateProgress(); },
+  })
+    .to(position, { top: midpoint, duration: 1.1 })
+    .call(() => { heldTopicIndex = index; updateProgress(); })
+    .to({}, { duration: 2.5 })
+    .call(() => { heldTopicIndex = null; updateProgress(); })
+    .to(position, { top, duration: 1.4 });
 }
 
 document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
@@ -236,14 +268,18 @@ function updateProgress() {
   const nextIndex = Math.max(0, sections.findIndex((section) => section.getBoundingClientRect().bottom > window.innerHeight * 0.55));
   let slateIndex = -1;
   let slateStrength = 0;
-  if (!reducedMotion && window.innerWidth > 760) {
+  if (!reducedMotion) {
     let nearestDistance = Number.POSITIVE_INFINITY;
     for (let index = 1; index < sections.length; index++) {
       const distance = Math.abs(window.scrollY - (sections[index].offsetTop - window.innerHeight * 0.5));
       if (distance < nearestDistance) { nearestDistance = distance; slateIndex = index; }
     }
-    slateStrength = Math.max(0, 1 - nearestDistance / (window.innerHeight * 0.21));
+    // Hold full opacity across the middle of the scroll transition.
+    slateStrength = Math.min(1, Math.max(0, (window.innerHeight * 0.34 - nearestDistance) / (window.innerHeight * 0.12)));
   }
+  if (heldTopicIndex !== null) { slateIndex = heldTopicIndex; slateStrength = 1; }
+  // The idea page has a persistent heading; an overlay would obscure its flow.
+  if (sections[targetChapter ?? -1]?.id === 'intelligence' || (heldTopicIndex === null && sections[slateIndex]?.id === 'intelligence')) slateStrength = 0;
   progressFill.style.transform = `scaleX(${progress})`;
   progressTrack.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
   ambient?.setProgress(progress);
@@ -256,6 +292,7 @@ function updateProgress() {
     transitionSlate.style.opacity = String(slateStrength);
     transitionSlate.style.transform = `translate(-50%, -50%) scale(${0.82 + slateStrength * 0.18})`;
   }
+  else transitionSlate.style.opacity = '0';
   if (nextIndex !== activeIndex) {
     activeIndex = nextIndex;
     chapterCounter.textContent = `${story[activeIndex].number} / ${String(story.length).padStart(2, '0')}`;
@@ -285,10 +322,10 @@ window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') { stopChapterTransition(); return; }
   if (event.target instanceof HTMLElement && event.target.closest('button, input, textarea, select, [contenteditable="true"]')) return;
   if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(event.key)) {
-    event.preventDefault(); goToChapter(Math.min((targetChapter ?? activeIndex) + 1, sections.length - 1));
+    event.preventDefault(); if (!event.repeat) goToChapter(Math.min((targetChapter ?? activeIndex) + 1, sections.length - 1));
   }
   if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(event.key)) {
-    event.preventDefault(); goToChapter(Math.max((targetChapter ?? activeIndex) - 1, 0));
+    event.preventDefault(); if (!event.repeat) goToChapter(Math.max((targetChapter ?? activeIndex) - 1, 0));
   }
   if (['Home', 'End'].includes(event.key)) { stopChapterTransition(); }
 });
